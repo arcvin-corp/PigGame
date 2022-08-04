@@ -1,0 +1,30 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Nunito", sans-serif;
+  font-weight: 400;
+  height: 100vh;
+  color: #333;
+  background-image: linear-gradient(to top left, #09010a 0%, #bf2e34 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-one {
+  height: 400px;
+  width: 400px;
+  background-color: green;
+  text-align: center;
+}
+
+.player-two {
+  height: 400px;
+  width: 400px;
+  background-color: green;
+  text-align: center;
+}
