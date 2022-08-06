@@ -1,10 +1,17 @@
 // Initialize game variables
 let diceMaxValue = 6;
-
 let currentActivePlayer: number = 1;
+
 const diceImageElement: HTMLImageElement | null = document.querySelector(".dice");
+const newGameButton: HTMLButtonElement | null = document.querySelector(".btn--new");
 const rollDiceButton: HTMLButtonElement | null = document.querySelector(".btn--roll");
 const holdButton: HTMLButtonElement | null = document.querySelector(".btn--hold");
+const playerOneSectionElement: HTMLElement | null = document.querySelector(".player--1");
+const playerTwoSectionElement: HTMLElement | null = document.querySelector(".player--2");
+const playerOneCurrentScoreElemet: HTMLParagraphElement | null = document.querySelector("#current--1");
+const playerTwoCurrentScoreElemet: HTMLParagraphElement | null = document.querySelector("#current--2");
+const plyaerOneTotalScoreElement: HTMLParagraphElement | null = document.querySelector("#score--1");
+const plyaerTwoTotalScoreElement: HTMLParagraphElement | null = document.querySelector("#score--2");
 
 /**
  * Function to generate a random number from 1 to deviceMaxNumber
@@ -18,14 +25,12 @@ const randomNumGenerator = (diceMaxVal: number = diceMaxValue): number => {
 class Player {
   private currentScoreElemet: HTMLParagraphElement | null;
   private totalScoreElement: HTMLParagraphElement | null;
-  private playerSectionElement: HTMLElement | null;
   private currentScore: number = 0;
   private totalScore: number = 0;
 
   constructor(public playerNumber: number) {
-    this.currentScoreElemet = document.querySelector(`#current--${playerNumber}`);
-    this.totalScoreElement = document.querySelector(`#score--${playerNumber}`);
-    this.playerSectionElement = document.querySelector(`.player--${playerNumber}`);
+    this.currentScoreElemet = this.playerNumber === 1 ? playerOneCurrentScoreElemet : playerTwoCurrentScoreElemet;
+    this.totalScoreElement = this.playerNumber === 1 ? plyaerOneTotalScoreElement : plyaerTwoTotalScoreElement;
   }
 
   private updateCurrentScore(diceValue: number) {
@@ -41,17 +46,39 @@ class Player {
     // Hold the total score value
     this.totalScore += this.currentScore;
 
-    // Reset current score
-    this.resetCurrentScore();
-
     if (this.totalScoreElement) {
       this.totalScoreElement.textContent = String(this.totalScore);
     }
 
-    // Change the current active player
-    currentActivePlayer = this.playerNumber === 1 ? 2 : 1;
+    // Check if the player has won
+    if (this.totalScore >= 20) {
+      let currentActivePlayerSectionElement =
+        currentActivePlayer === 1 ? playerOneSectionElement : playerTwoSectionElement;
 
-    // Remove player--active class from the play section.
+      if (currentActivePlayerSectionElement) {
+        if (currentActivePlayerSectionElement.classList.contains("player--active")) {
+          currentActivePlayerSectionElement.classList.remove("player--active");
+        }
+
+        if (!currentActivePlayerSectionElement.classList.contains("player--winner")) {
+          currentActivePlayerSectionElement.classList.add("player--winner");
+        }
+      }
+
+      // Remove the dice image
+      if (diceImageElement) {
+        if (!diceImageElement.classList.contains("hidden")) {
+          diceImageElement.classList.add("hidden");
+        }
+      }
+
+      // Remove the event listeners
+      if (rollDiceButton) rollDiceButton.removeEventListener("click", rollDice);
+      if (holdButton) holdButton.removeEventListener("click", holdScore);
+    } else {
+      // Reset current score
+      this.resetCurrentScore();
+    }
   }
 
   rollDice() {
@@ -81,38 +108,104 @@ class Player {
     this.currentScore = 0;
     this.updateCurrentScore(0);
 
-    // Change the player active state
-    this.playerActiveDisable();
-  }
+    // Change the current active player
+    currentActivePlayer = this.playerNumber === 1 ? 2 : 1;
 
-  private playerActiveDisable() {
-    if (this.playerSectionElement) {
-      if (this.playerSectionElement.classList.contains("player--active")) {
-        this.playerSectionElement.classList.remove("player--active");
+    // Change the player active state
+    let currentActivePlayerSectionElement =
+      currentActivePlayer === 1 ? playerOneSectionElement : playerTwoSectionElement;
+    let inactivePlayer: number = currentActivePlayer === 1 ? 2 : 1;
+    let inactivePlayerSectionElement = inactivePlayer === 1 ? playerOneSectionElement : playerTwoSectionElement;
+
+    if (inactivePlayerSectionElement) {
+      if (inactivePlayerSectionElement.classList.contains("player--active")) {
+        inactivePlayerSectionElement.classList.remove("player--active");
+      }
+    }
+
+    if (currentActivePlayerSectionElement) {
+      if (!currentActivePlayerSectionElement.classList.contains("player--active")) {
+        currentActivePlayerSectionElement.classList.add("player--active");
       }
     }
   }
 }
 
-const playerOne = new Player(1);
-const playerTwo = new Player(2);
+let playerOne = new Player(1);
+let playerTwo = new Player(2);
+
+const rollDice = () => {
+  if (currentActivePlayer === 1) {
+    playerOne.rollDice();
+  } else if (currentActivePlayer === 2) {
+    playerTwo.rollDice();
+  }
+};
+
+const holdScore = () => {
+  if (currentActivePlayer === 1) {
+    playerOne.holdScore();
+  } else if (currentActivePlayer === 2) {
+    playerTwo.holdScore();
+  }
+};
 
 if (rollDiceButton) {
-  rollDiceButton.addEventListener("click", () => {
-    if (currentActivePlayer === 1) {
-      playerOne.rollDice();
-    } else if (currentActivePlayer === 2) {
-      playerTwo.rollDice();
-    }
-  });
+  rollDiceButton.addEventListener("click", rollDice);
 }
 
 if (holdButton) {
-  holdButton.addEventListener("click", () => {
-    if (currentActivePlayer === 1) {
-      playerOne.holdScore();
-    } else if (currentActivePlayer === 2) {
-      playerTwo.holdScore();
+  holdButton.addEventListener("click", holdScore);
+}
+
+if (newGameButton) {
+  newGameButton.addEventListener("click", () => {
+    playerOne = new Player(1);
+    playerTwo = new Player(2);
+
+    currentActivePlayer = 1;
+
+    if (playerTwoSectionElement) {
+      if (playerTwoSectionElement.classList.contains("player--active")) {
+        playerTwoSectionElement.classList.remove("player--active");
+      }
+      if (playerTwoSectionElement.classList.contains("player--winner")) {
+        playerTwoSectionElement.classList.remove("player--winner");
+      }
+    }
+
+    if (playerOneSectionElement) {
+      if (!playerOneSectionElement.classList.contains("player--active")) {
+        playerOneSectionElement.classList.add("player--active");
+      }
+      if (playerOneSectionElement.classList.contains("player--winner")) {
+        playerOneSectionElement.classList.remove("player--winner");
+      }
+    }
+
+    if (playerOneCurrentScoreElemet && playerTwoCurrentScoreElemet) {
+      playerOneCurrentScoreElemet.textContent = "0";
+      playerTwoCurrentScoreElemet.textContent = "0";
+    }
+
+    if (plyaerOneTotalScoreElement && plyaerTwoTotalScoreElement) {
+      plyaerOneTotalScoreElement.textContent = "0";
+      plyaerTwoTotalScoreElement.textContent = "0";
+    }
+
+    // Remove the dice image
+    if (diceImageElement) {
+      if (!diceImageElement.classList.contains("hidden")) {
+        diceImageElement.classList.add("hidden");
+      }
+    }
+
+    if (rollDiceButton) {
+      rollDiceButton.addEventListener("click", rollDice);
+    }
+
+    if (holdButton) {
+      holdButton.addEventListener("click", holdScore);
     }
   });
 }
