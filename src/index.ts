@@ -1,6 +1,7 @@
 // Initialize game variables
-let diceMaxValue = 6;
+let diceMaxValue: number = 6;
 let currentActivePlayer: number = 1;
+let gameMaxScore: number = 100;
 
 const diceImageElement: HTMLImageElement | null = document.querySelector(".dice");
 const newGameButton: HTMLButtonElement | null = document.querySelector(".btn--new");
@@ -51,7 +52,7 @@ class Player {
     }
 
     // Check if the player has won
-    if (this.totalScore >= 20) {
+    if (this.totalScore >= gameMaxScore) {
       let currentActivePlayerSectionElement =
         currentActivePlayer === 1 ? playerOneSectionElement : playerTwoSectionElement;
 
